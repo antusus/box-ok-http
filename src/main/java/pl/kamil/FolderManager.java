@@ -27,12 +27,10 @@ public class FolderManager {
 
     public JsonNode createFolder(CreateFolderRequest folder) {
         try {
-            var dupa = objectMapper.writeValueAsBytes(folder);
-            System.out.println(new String(dupa));
             Request.Builder createFolderRequest = new Request.Builder()
                     .url(BASE_URL)
                     .post(RequestBody.create(
-                            dupa,
+                            objectMapper.writeValueAsBytes(folder),
                             MediaType.parse("applcation/json")
                     ));
             return responseAsJson(createFolderRequest);
