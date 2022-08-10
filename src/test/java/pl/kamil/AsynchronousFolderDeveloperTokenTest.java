@@ -33,7 +33,6 @@ class AsynchronousFolderDeveloperTokenTest extends UsingDeveloperTokenTests {
 
         assertThat(folder.get("name").asText()).isEqualTo(newFolderName);
 
-        var deleteResponse = folderManager.deleteFolder(folder.get("id").asText()).get(2000, MILLISECONDS);
-        assertThat(deleteResponse.isSuccessful()).isTrue();
+        folderManager.deleteFolder(folder.get("id").asText()).get(2000, MILLISECONDS);
     }
 }

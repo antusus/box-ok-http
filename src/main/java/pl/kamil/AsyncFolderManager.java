@@ -44,12 +44,11 @@ public class AsyncFolderManager {
         }
     }
 
-    //TODO: it should be Void
-    public CompletableFuture<Response> deleteFolder(String folderId) {
+    public CompletableFuture<Void> deleteFolder(String folderId) {
         var request = new Request.Builder()
                 .url(BASE_URL.newBuilder().addPathSegment(folderId).build())
                 .delete();
-        return newCall(request);
+        return newCall(request).thenApply(response -> null);
     }
 
     private CompletableFuture<JsonNode> responseAsJson(Request.Builder request) {
