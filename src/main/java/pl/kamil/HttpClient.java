@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,10 +17,15 @@ public class HttpClient {
         this.authToken = authToken;
         this.client = new OkHttpClient.Builder()
                 .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
+                .connectionSpecs(List.of(
+                        new ConnectionSpec.Builder(true)
+                                .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_3, TlsVersion.SSL_3_0)
+                                .build()
+                ))
                 .build();
     }
 
-    public Response newCall(Request.Builder requestBuilder){
+    public Response newCall(Request.Builder requestBuilder) {
         requestBuilder.addHeader("Authorization", "Bearer " + authToken);
         try {
             var response = client.newCall(requestBuilder.build()).execute();
@@ -36,7 +42,7 @@ public class HttpClient {
         }
     }
 
-    public CompletableFuture<Response> newAsyncCall(Request.Builder requestBuilder){
+    public CompletableFuture<Response> newAsyncCall(Request.Builder requestBuilder) {
         requestBuilder.addHeader("Authorization", "Bearer " + authToken);
         var responseFuture = new ResponseFuture();
         client.newCall(requestBuilder.build()).enqueue(responseFuture);
