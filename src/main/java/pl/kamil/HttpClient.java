@@ -17,11 +17,7 @@ public class HttpClient {
         this.authToken = authToken;
         this.client = new OkHttpClient.Builder()
                 .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
-                .connectionSpecs(List.of(
-                        new ConnectionSpec.Builder(true)
-                                .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_3, TlsVersion.SSL_3_0)
-                                .build()
-                ))
+                .connectionSpecs(List.of(ConnectionSpec.MODERN_TLS))
                 .build();
     }
 
