@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SynchronousFolderDeveloperTokenTest {
-    private static final String DEVELOPER_TOKEN = "nXr4QOjcwmtIZFItP7yX2pP5EJqYw4rO";
-    private final HttpClient client = new HttpClient(DEVELOPER_TOKEN);
+class SynchronousFolderDeveloperTokenTest extends UsingDeveloperTokenTests {
+    private final HttpClient client = new HttpClient(getDeveloperToken());
     private FolderManager folderManager;
 
     @BeforeEach
