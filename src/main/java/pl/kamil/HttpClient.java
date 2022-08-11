@@ -10,15 +10,28 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class HttpClient {
+    private final HttpUrl baseUrl;
     private final OkHttpClient client;
     private final String authToken;
 
-    public HttpClient(String authToken) {
+    public HttpClient(String authToken, HttpUrl baseUrl) {
         this.authToken = authToken;
-        this.client = new OkHttpClient.Builder()
-                .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
-                .connectionSpecs(List.of(ConnectionSpec.MODERN_TLS))
-                .build();
+        this.baseUrl = baseUrl;
+        var builder = new OkHttpClient.Builder()
+                .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+        if (baseUrl.isHttps()) {
+            builder.connectionSpecs(List.of(ConnectionSpec.MODERN_TLS));
+        }
+        this.client = builder.build();
+    }
+
+    public HttpClient(String authToken) {
+        this(authToken, new HttpUrl.Builder()
+                .scheme("https")
+                .host("api.box.com")
+                .addPathSegment("2.0")
+                .build()
+        );
     }
 
     public Response newCall(Request.Builder requestBuilder) {
@@ -43,6 +56,10 @@ public class HttpClient {
         var responseFuture = new ResponseFuture();
         client.newCall(requestBuilder.build()).enqueue(responseFuture);
         return responseFuture.future;
+    }
+
+    public HttpUrl getBaseUrl() {
+        return this.baseUrl;
     }
 
     private static class ResponseFuture implements Callback {

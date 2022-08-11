@@ -11,21 +11,19 @@ import java.util.concurrent.CompletableFuture;
 
 public class AsyncFolderManager {
     private final HttpClient httpClient;
-    private final static HttpUrl BASE_URL = new HttpUrl.Builder()
-            .scheme("https")
-            .host("api.box.com")
-            .addPathSegment("2.0")
-            .addPathSegment("folders")
-            .build();
+    private final HttpUrl baseUrl;
     private final static ObjectMapper objectMapper = new ObjectMapper();
 
     public AsyncFolderManager(HttpClient client) {
         this.httpClient = client;
+        this.baseUrl = client.getBaseUrl().newBuilder()
+                .addPathSegment("folders")
+                .build();
     }
 
     public CompletableFuture<JsonNode> getFolderInfo(String folderId) {
         var request = new Request.Builder()
-                .url(BASE_URL.newBuilder().addPathSegment(folderId).build())
+                .url(baseUrl.newBuilder().addPathSegment(folderId).build())
                 .get();
         return responseAsJson(request);
     }
@@ -33,7 +31,7 @@ public class AsyncFolderManager {
     public CompletableFuture<JsonNode> createFolder(CreateFolderRequest folder) {
         try {
             Request.Builder request = new Request.Builder()
-                    .url(BASE_URL)
+                    .url(baseUrl)
                     .post(RequestBody.create(
                             objectMapper.writeValueAsBytes(folder),
                             MediaType.parse("applcation/json")
@@ -46,7 +44,7 @@ public class AsyncFolderManager {
 
     public CompletableFuture<Void> deleteFolder(String folderId) {
         var request = new Request.Builder()
-                .url(BASE_URL.newBuilder().addPathSegment(folderId).build())
+                .url(baseUrl.newBuilder().addPathSegment(folderId).build())
                 .delete();
         return newCall(request).thenApply(response -> null);
     }
