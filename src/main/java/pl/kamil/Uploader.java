@@ -7,8 +7,6 @@ import java.io.IOException;
 
 public class Uploader {
 
-  private String authToken;
-  private OkHttpClient httpClient = new OkHttpClient();
   private static String ATTRIBUTES =
       "{\n"
           + "  \"name\": \"%s\",\n"
@@ -18,6 +16,8 @@ public class Uploader {
           + "  \"content_created_at\": \"2012-12-12T10:53:43-08:00\",\n"
           + "  \"content_modified_at\": \"2012-12-12T10:53:43-08:00\"\n"
           + "}";
+  private String authToken;
+  private OkHttpClient httpClient = new OkHttpClient();
 
   public Uploader(String authToken) {
     this.authToken = authToken;
@@ -42,7 +42,8 @@ public class Uploader {
             .addFormDataPart(
                 "pic", file.getName(), RequestBody.create(file, MediaType.parse("image/jpeg")))
             .build();
-    executePostRequest(String.format("https://api.box.com/2.0/users/%s/avatar", userId), multipartBody);
+    executePostRequest(
+        String.format("https://api.box.com/2.0/users/%s/avatar", userId), multipartBody);
   }
 
   private void executePostRequest(String url, RequestBody body) {
