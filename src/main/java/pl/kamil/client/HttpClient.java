@@ -27,9 +27,10 @@ public class HttpClient {
             .handleIf((response, throwable) -> !response.isSuccessful() && response.code() == 429)
             .withDelayFn(
                 context -> {
-                  // we can calculate our own delay
+                  // we can calculate our own delay using attempts count or
                   System.out.println("Count : " + context.getAttemptCount());
                   var lastResult = context.getLastResult();
+                  // we can use "Retry-After" header
                   if (lastResult.header("Retry-After") != null) {
                     return Duration.ofSeconds(Integer.parseInt(lastResult.header("Retry-After")));
                   }
