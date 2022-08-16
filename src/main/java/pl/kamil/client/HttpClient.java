@@ -6,6 +6,7 @@ import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,16 @@ public class HttpClient {
     this.retryPolicy =
         RetryPolicy.<Response>builder()
             .handleIf((response, throwable) -> !response.isSuccessful() && response.code() == 429)
+            .withDelayFn(
+                context -> {
+                  // we can calculate our own delay
+                  System.out.println("Count : " + context.getAttemptCount());
+                  var lastResult = context.getLastResult();
+                  if (lastResult.header("Retry-After") != null) {
+                    return Duration.ofSeconds(Integer.parseInt(lastResult.header("Retry-After")));
+                  }
+                  return Duration.ofMillis(50);
+                })
             .onRetry(event -> System.out.println("Retrying: " + event.toString()))
             .onRetriesExceeded(event -> System.out.println("Retries exceeded: " + event.toString()))
             .onFailure(event -> System.out.println("Failure: " + event.toString()))

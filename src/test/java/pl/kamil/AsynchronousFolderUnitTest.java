@@ -37,7 +37,16 @@ class AsynchronousFolderUnitTest {
 
   @Test
   void retriesGet() throws InterruptedException, ExecutionException, TimeoutException {
-    server.enqueue(new MockResponse().setResponseCode(429).setBody("Excedding allowed rate limit"));
+    server.enqueue(new MockResponse()
+            .setResponseCode(429)
+            .setHeader("Retry-After", 1)
+            .setBody("Excedding allowed rate limit")
+    );
+    server.enqueue(new MockResponse()
+            .setResponseCode(429)
+            .setHeader("Retry-After", 1)
+            .setBody("Excedding allowed rate limit")
+    );
     server.enqueue(
         new MockResponse()
             .setResponseCode(200)
@@ -48,7 +57,9 @@ class AsynchronousFolderUnitTest {
                                         "id": "fake"
                                     }
                                     """));
-    var response = folderManager.getFolderInfo("fake").get(100, MILLISECONDS);
+    var response = folderManager.getFolderInfo("fake")
+            // because we are adding "Retry-After" handling we have to wait a bit longer
+            .get(2100, MILLISECONDS);
     assertThat(response.get("id").asText()).isEqualTo("fake");
   }
 
@@ -61,8 +72,8 @@ class AsynchronousFolderUnitTest {
                     new MockResponse()
                         .setResponseCode(429)
                         .setBody("Excedding allowed rate limit")));
-    assertThatThrownBy(() -> folderManager.getFolderInfo("fake").get(100, MILLISECONDS))
-        // with async execution exceptions are wrappen in `java.util.concurrent.ExecutionException`
+    assertThatThrownBy(() -> folderManager.getFolderInfo("fake").get(500, MILLISECONDS))
+        // with async execution exceptions are wrapped in `java.util.concurrent.ExecutionException`
         .hasCauseInstanceOf(RuntimeException.class)
         .hasMessageContaining("Excedding allowed rate limit");
   }
