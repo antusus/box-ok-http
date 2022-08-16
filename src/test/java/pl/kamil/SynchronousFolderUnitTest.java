@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import pl.kamil.client.HttpClient;
 
 import java.io.IOException;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Ignore
 class SynchronousFolderUnitTest {
@@ -105,4 +107,32 @@ class SynchronousFolderUnitTest {
     var response = folderManager.getFolderInfo("12345");
     assertThat(response.get("id").asText()).isEqualTo("intercepted");
   }
+
+  @Test
+  void retriesGet() {
+    server.enqueue(new MockResponse()
+            .setResponseCode(429)
+            .setBody("Excedding allowed rate limit"));
+    server.enqueue(
+            new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader("Content-type", "application/json")
+                    .setBody(
+                            """
+                                    {
+                                        "id": "fake"
+                                    }
+                                    """));
+    var response = folderManager.getFolderInfo("fake");
+    assertThat(response.get("id").asText()).isEqualTo("fake");
+  }
+
+  @Test
+  void retriesFails() {
+    IntStream.range(1, 7).forEach(i ->server.enqueue(new MockResponse()
+            .setResponseCode(429)
+            .setBody("Excedding allowed rate limit")));
+    assertThatThrownBy(() ->folderManager.getFolderInfo("fake")).hasMessage("Excedding allowed rate limit");
+  }
+
 }

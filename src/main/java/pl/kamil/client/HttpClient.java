@@ -1,5 +1,7 @@
 package pl.kamil.client;
 
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.okhttp.FailsafeCall;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,17 +15,27 @@ public class HttpClient {
   private final HttpUrl baseUrl;
   private final OkHttpClient client;
   private final String authToken;
+  private final RetryPolicy<Response> retryPolicy;
 
   HttpClient(String authToken, HttpUrl baseUrl, OkHttpClient client) {
     this.authToken = authToken;
     this.baseUrl = baseUrl;
     this.client = client;
+    this.retryPolicy =
+        RetryPolicy.<Response>builder()
+            .handleIf((response, throwable) -> !response.isSuccessful() && response.code() == 429)
+            .onRetry(event -> System.out.println("Retrying: " + event.toString()))
+            .onRetriesExceeded(event -> System.out.println("Retries exceeded: " + event.toString()))
+            .onFailure(event -> System.out.println("Failure: " + event.toString()))
+            .withMaxRetries(5)
+            .build();
   }
 
   public Response newCall(Request.Builder requestBuilder) {
     requestBuilder.addHeader("Authorization", "Bearer " + authToken);
     try {
-      var response = client.newCall(requestBuilder.build()).execute();
+      var response =
+          FailsafeCall.with(retryPolicy).compose(client.newCall(requestBuilder.build())).execute();
       if (response.isSuccessful()) {
         return response;
       }
@@ -39,9 +51,24 @@ public class HttpClient {
 
   public CompletableFuture<Response> newAsyncCall(Request.Builder requestBuilder) {
     requestBuilder.addHeader("Authorization", "Bearer " + authToken);
-    var responseFuture = new ResponseFuture();
-    client.newCall(requestBuilder.build()).enqueue(responseFuture);
-    return responseFuture.future;
+    // without failsafe:
+    // var responseFuture = new ResponseFuture();
+    // client.newCall(requestBuilder.build()).enqueue(responseFuture);
+    // return responseFuture.future;
+    return FailsafeCall.with(retryPolicy)
+        .compose(client.newCall(requestBuilder.build()))
+        .executeAsync()
+        .thenApply(
+            response -> {
+              if (!response.isSuccessful()) {
+                try {
+                  throw new RuntimeException(response.body().string());
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }
+              return response;
+            });
   }
 
   public HttpUrl getBaseUrl() {
@@ -90,8 +117,7 @@ public class HttpClient {
               public Response intercept(@NotNull Chain chain) throws IOException {
                 var originalRequest = chain.request();
                 var requestBody = Objects.requireNonNullElse(originalRequest.body(), null);
-                var bodyContentType =
-                    Objects.requireNonNullElse(requestBody.contentType(), null);
+                var bodyContentType = Objects.requireNonNullElse(requestBody.contentType(), null);
                 // for simplification, I'm ommiting getting body, but it is possible to get it:
                 // https://square.github.io/okhttp/features/interceptors/#rewriting-requests
 
