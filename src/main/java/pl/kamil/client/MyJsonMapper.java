@@ -3,6 +3,8 @@ package pl.kamil.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +14,7 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 
 public class MyJsonMapper {
   private static final MyJsonMapper INSTANCE = new MyJsonMapper();
-  private final ObjectMapper objectMapper;
+  private ObjectMapper objectMapper;
 
   private MyJsonMapper() {
     this.objectMapper =
@@ -61,5 +63,16 @@ public class MyJsonMapper {
     } catch (IOException e) {
       throw new RuntimeException("Cannot read response", e);
     }
+  }
+  public <U, T extends StdDeserializer<U>> void registerDeserializer(Class<U> deserializationTarget, T deserializer, String name) {
+    var module = new SimpleModule(name);
+    module.addDeserializer(deserializationTarget, deserializer);
+    objectMapper.registerModule(module);
+  }
+
+  public void removeModules() {
+    // there is no way of removing modules but in the real life we do not need to do that only for one test I'm recreating mapper
+    this.objectMapper =
+            new ObjectMapper().disable(FAIL_ON_UNKNOWN_PROPERTIES).disable(WRITE_DATES_AS_TIMESTAMPS);
   }
 }

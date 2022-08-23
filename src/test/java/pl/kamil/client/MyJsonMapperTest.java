@@ -3,6 +3,7 @@ package pl.kamil.client;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.TimeZone;
@@ -21,9 +22,8 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6, 15, 57, 1);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT-7:00"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateWithTime(2019, APRIL, 6, 15, 57, 1, TimeZone.getTimeZone("GMT-7:00"));
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
     }
 
     @Test
@@ -32,9 +32,8 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6, 15, 57, 1);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateWithTime(2019, APRIL, 6, 15, 57, 1, TimeZone.getTimeZone("GMT"));
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
     }
 
     @Test
@@ -43,9 +42,8 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6, 15, 57, 1);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateWithTime(2019, APRIL, 6, 15, 57, 1, TimeZone.getTimeZone("GMT"));
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
     }
 
     @Test
@@ -54,9 +52,8 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6, 15, 57, 1);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateWithTime(2019, APRIL, 6, 15, 57, 1, TimeZone.getTimeZone("GMT"));
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
     }
 
     @Test
@@ -65,9 +62,8 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6, 15, 57, 1);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateWithTime(2019, APRIL, 6, 15, 57, 1, TimeZone.getTimeZone("GMT"));
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
     }
 
     @Test
@@ -76,9 +72,21 @@ class MyJsonMapperTest {
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
 
-      var calendar = new GregorianCalendar(2019, APRIL, 6);
-      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-      assertThat(deserialized.getDate()).isCloseTo(calendar.getTime(), 0L);
+      var expectedDate = dateOnly(2019, APRIL, 6);
+      assertThat(deserialized.getDate()).isCloseTo(expectedDate, 0L);
+    }
+
+    @Test
+    void deserializeWithCustomDeserializer() {
+      mapper.registerDeserializer(Date.class, new MyDateDeserializer(Date.class), "MyDateDeserializer");
+      var withDate = Map.of("date", "2019-04-06");
+      var jsonString = mapper.toJsonString(withDate);
+      var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
+
+      // our deserializer always returns current date
+      assertThat(deserialized.getDate()).isCloseTo(new Date(), 50L);
+
+      mapper.removeModules();
     }
   }
 
@@ -111,5 +119,24 @@ class MyJsonMapperTest {
           .isEqualTo("""
                               {"date":"2019-04-06"}""");
     }
+  }
+
+  private Date dateWithTime(
+      int year,
+      int month,
+      int dayOfMonth,
+      int hourOfDay,
+      int minute,
+      int second,
+      TimeZone timeZone) {
+    var calendar = new GregorianCalendar(year, month, dayOfMonth, hourOfDay, minute, second);
+    calendar.setTimeZone(timeZone);
+    return calendar.getTime();
+  }
+
+  private Date dateOnly(int year, int month, int dayOfMonth) {
+    var calendar = new GregorianCalendar(year, month, dayOfMonth);
+    calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+    return calendar.getTime();
   }
 }
