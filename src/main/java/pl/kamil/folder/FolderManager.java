@@ -38,6 +38,20 @@ public class FolderManager {
     newCall(request).close();
   }
 
+  public FolderItems items(String folderId) {
+    var request =
+        new Request.Builder()
+            .url(
+                baseUrl
+                    .newBuilder()
+                    .addPathSegment(folderId)
+                    .addPathSegment("items")
+                    .addQueryParameter("usemarker", "true")
+                    .build())
+            .get();
+    return objectMapper.deserialize(responseAsJson(request), FolderItems.class);
+  }
+
   private String responseAsJson(Request.Builder request) {
     try (var responseBody = newCall(request)) {
       return objectMapper.toJsonString(Objects.requireNonNull(responseBody.body()).byteStream());

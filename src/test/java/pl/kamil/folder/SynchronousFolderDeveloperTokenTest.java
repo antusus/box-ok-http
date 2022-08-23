@@ -42,4 +42,12 @@ class SynchronousFolderDeveloperTokenTest extends UsingDeveloperTokenTests {
 
     folderManager.deleteFolder(folder.getId());
   }
+
+  @Test
+  void getItems() {
+    var items = folderManager.items("0");
+
+    // we expect that there are some folders
+    assertThat(items.getEntries().stream().filter(i -> i instanceof FolderMini)).isNotEmpty();
+  }
 }
