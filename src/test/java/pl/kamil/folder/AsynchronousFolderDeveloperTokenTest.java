@@ -1,7 +1,8 @@
-package pl.kamil;
+package pl.kamil.folder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.kamil.UsingDeveloperTokenTests;
 import pl.kamil.client.HttpClient;
 
 import java.util.concurrent.ExecutionException;

@@ -1,4 +1,4 @@
-package pl.kamil;
+package pl.kamil.folder;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -37,16 +37,16 @@ class AsynchronousFolderUnitTest {
 
   @Test
   void retriesGet() throws InterruptedException, ExecutionException, TimeoutException {
-    server.enqueue(new MockResponse()
+    server.enqueue(
+        new MockResponse()
             .setResponseCode(429)
             .setHeader("Retry-After", 1)
-            .setBody("Excedding allowed rate limit")
-    );
-    server.enqueue(new MockResponse()
+            .setBody("Excedding allowed rate limit"));
+    server.enqueue(
+        new MockResponse()
             .setResponseCode(429)
             .setHeader("Retry-After", 1)
-            .setBody("Excedding allowed rate limit")
-    );
+            .setBody("Excedding allowed rate limit"));
     server.enqueue(
         new MockResponse()
             .setResponseCode(200)
@@ -57,7 +57,9 @@ class AsynchronousFolderUnitTest {
                                         "id": "fake"
                                     }
                                     """));
-    var response = folderManager.getFolderInfo("fake")
+    var response =
+        folderManager
+            .getFolderInfo("fake")
             // because we are adding "Retry-After" handling we have to wait a bit longer
             .get(2100, MILLISECONDS);
     assertThat(response.get("id").asText()).isEqualTo("fake");
