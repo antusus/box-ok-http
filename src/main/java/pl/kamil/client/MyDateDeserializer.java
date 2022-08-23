@@ -8,8 +8,8 @@ import java.util.Date;
 
 public class MyDateDeserializer extends StdDeserializer<Date> {
 
-    protected MyDateDeserializer(Class<?> vc) {
-        super(vc);
+    public MyDateDeserializer() {
+        super(Date.class);
     }
 
     @Override

@@ -78,7 +78,7 @@ class MyJsonMapperTest {
 
     @Test
     void deserializeWithCustomDeserializer() {
-      mapper.registerDeserializer(Date.class, new MyDateDeserializer(Date.class), "MyDateDeserializer");
+      mapper.registerDeserializer(Date.class, new MyDateDeserializer(), "MyDateDeserializer");
       var withDate = Map.of("date", "2019-04-06");
       var jsonString = mapper.toJsonString(withDate);
       var deserialized = mapper.deserialize(jsonString, ObjectWithDate.class);
