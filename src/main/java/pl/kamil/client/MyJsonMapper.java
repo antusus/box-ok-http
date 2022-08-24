@@ -3,6 +3,7 @@ package pl.kamil.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -18,7 +19,10 @@ public class MyJsonMapper {
 
   private MyJsonMapper() {
     this.objectMapper =
-        new ObjectMapper().disable(FAIL_ON_UNKNOWN_PROPERTIES).disable(WRITE_DATES_AS_TIMESTAMPS);
+        new ObjectMapper()
+            .disable(FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(WRITE_DATES_AS_TIMESTAMPS)
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
   }
 
   public static MyJsonMapper getInstance() {
@@ -64,15 +68,18 @@ public class MyJsonMapper {
       throw new RuntimeException("Cannot read response", e);
     }
   }
-  public <U, T extends StdDeserializer<U>> void registerDeserializer(Class<U> deserializationTarget, T deserializer, String name) {
+
+  public <U, T extends StdDeserializer<U>> void registerDeserializer(
+      Class<U> deserializationTarget, T deserializer, String name) {
     var module = new SimpleModule(name);
     module.addDeserializer(deserializationTarget, deserializer);
     objectMapper.registerModule(module);
   }
 
   public void removeModules() {
-    // there is no way of removing modules but in the real life we do not need to do that only for one test I'm recreating mapper
+    // there is no way of removing modules but in the real life we do not need to do that only for
+    // one test I'm recreating mapper
     this.objectMapper =
-            new ObjectMapper().disable(FAIL_ON_UNKNOWN_PROPERTIES).disable(WRITE_DATES_AS_TIMESTAMPS);
+        new ObjectMapper().disable(FAIL_ON_UNKNOWN_PROPERTIES).disable(WRITE_DATES_AS_TIMESTAMPS);
   }
 }

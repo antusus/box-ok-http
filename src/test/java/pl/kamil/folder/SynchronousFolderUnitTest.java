@@ -51,7 +51,8 @@ class SynchronousFolderUnitTest {
             .setBody(
                 """
                 {
-                    "id": "fake"
+                    "id": "fake",
+                    "type": "folder"
                 }
                 """));
     var response = folderManager.getFolderInfo("fake");
@@ -99,7 +100,8 @@ class SynchronousFolderUnitTest {
                             ResponseBody.create(
                                 """
                                             {
-                                                "id": "intercepted"
+                                                "id": "intercepted",
+                                                "type": "folder"
                                             }
                                             """,
                                 MediaType.parse("application/json")))
@@ -120,7 +122,8 @@ class SynchronousFolderUnitTest {
             .setBody(
                 """
                 {
-                    "id": "fake"
+                    "id": "fake",
+                    "type": "folder"
                 }
                 """));
     var response = folderManager.getFolderInfo("fake");
@@ -162,7 +165,8 @@ class SynchronousFolderUnitTest {
                           ResponseBody.create(
                               """
                                           {
-                                              "id": "intercepted"
+                                              "id": "intercepted",
+                                              "type": "folder"
                                           }
                                           """,
                               MediaType.parse("application/json")))

@@ -1,25 +1,25 @@
 package pl.kamil;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import pl.kamil.file.FileMini;
 import pl.kamil.folder.FolderMini;
+import pl.kamil.folder.FolderStandard;
 import pl.kamil.weblink.WeblinkMini;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = FolderMini.class, name = "folder"),
+  @JsonSubTypes.Type(value = FolderStandard.class, name = "folder"),
   @JsonSubTypes.Type(value = FileMini.class, name = "file"),
   @JsonSubTypes.Type(value = WeblinkMini.class, name = "weblink")
 })
 public class ItemMini {
-  private final String type;
+  protected final String type;
   private String id;
   private String name;
   private String etag;
 
-  @JsonProperty("sequence_id")
   private String sequenceId;
 
   protected ItemMini(String type) {

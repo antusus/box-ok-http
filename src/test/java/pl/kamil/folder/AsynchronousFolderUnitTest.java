@@ -54,7 +54,8 @@ class AsynchronousFolderUnitTest {
             .setBody(
                 """
                                     {
-                                        "id": "fake"
+                                        "id": "fake",
+                                        "type": "folder"
                                     }
                                     """));
     var response =

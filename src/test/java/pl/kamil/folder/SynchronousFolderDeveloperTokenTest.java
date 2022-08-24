@@ -33,12 +33,8 @@ class SynchronousFolderDeveloperTokenTest extends UsingDeveloperTokenTests {
     var newFolderName = "Kamil Test with ok-http";
     var folder = folderManager.createFolder(new CreateFolderRequest(newFolderName, "0"));
     assertThat(folder.getId()).isNotNull();
-    assertThat(folder.getEtag()).isNotNull();
     assertThat(folder.getName()).isEqualTo(newFolderName);
-    assertThat(folder.getSequenceId()).isNotNull();
     assertThat(folder.getCreatedAt()).isCloseTo(new Date(), 1000L);
-
-    assertThat(folder.getName()).isEqualTo(newFolderName);
 
     folderManager.deleteFolder(folder.getId());
   }
